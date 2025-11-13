@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Application</title>
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #ffb347, #ffcc33);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .quiz-box {
+        background: white;
+        width: 430px;
+        padding: 25px 30px;
+        border-radius: 15px;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      #question {
+        font-size: 18px;
+        font-weight: 500;
+        color: #444;
+        margin-bottom: 15px;
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        margin: 8px 0;
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .btn:hover {
+        background-color: #e68900;
+      }
+
+      .feedback {
+        font-weight: bold;
+        margin-top: 10px;
+        height: 20px;
+      }
+
+      #score {
+        font-size: 18px;
+        color: #2e7d32;
+        margin-top: 10px;
+      }
+
+      #next-btn {
+        margin-top: 15px;
+        background: #4caf50;
+      }
+
+      #next-btn:hover {
+        background: #43a047;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .progress-bar {
+        height: 10px;
+        background: #e0e0e0;
+        border-radius: 5px;
+        margin: 15px 0;
+        overflow: hidden;
+      }
+
+      .progress {
+        height: 10px;
+        width: 0%;
+        background: #ff9800;
+        transition: width 0.5s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-box">
+      <h1>🧠 JavaScript Quiz</h1>
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+      <div id="question">Loading question...</div>
+      <div id="answer-buttons"></div>
+      <div class="feedback" id="feedback"></div>
+      <div id="score">Score: 0</div>
+      <button id="next-btn" class="btn hidden">Next</button>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          question: "1. Which language is used for web development?",
+          answers: [
+            { text: "Python", correct: false },
+            { text: "JavaScript", correct: true },
+            { text: "C++", correct: false },
+            { text: "Java", correct: false },
+          ],
+        },
+        {
+          question: "2. What does CSS stand for?",
+          answers: [
+            { text: "Computer Style Sheets", correct: false },
+            { text: "Creative Style Sheets", correct: false },
+            { text: "Cascading Style Sheets", correct: true },
+            { text: "Colorful Style Sheets", correct: false },
+          ],
+        },
+        {
+          question: "3. What does HTML stand for?",
+          answers: [
+            { text: "Hyper Text Markup Language", correct: true },
+            { text: "HighText Machine Language", correct: false },
+            { text: "Hyperlinks and Text Markup Language", correct: false },
+            { text: "Home Tool Markup Language", correct: false },
+          ],
+        },
+        {
+          question: "4. Which tag is used for JavaScript?",
+          answers: [
+            { text: "<script>", correct: true },
+            { text: "<js>", correct: false },
+            { text: "<javascript>", correct: false },
+            { text: "<code>", correct: false },
+          ],
+        },
+        {
+          question: "5. Which company developed JavaScript?",
+          answers: [
+            { text: "Microsoft", correct: false },
+            { text: "Netscape", correct: true },
+            { text: "Google", correct: false },
+            { text: "IBM", correct: false },
+          ],
+        },
+        {
+          question: "6. Which property is used to change text color in CSS?",
+          answers: [
+            { text: "font-color", correct: false },
+            { text: "color", correct: true },
+            { text: "text-color", correct: false },
+            { text: "background-color", correct: false },
+          ],
+        },
+        {
+          question: "7. Which symbol is used for comments in JavaScript?",
+          answers: [
+            { text: "//", correct: true },
+            { text: "/* */", correct: false },
+            { text: "<!-- -->", correct: false },
+            { text: "#", correct: false },
+          ],
+        },
+        {
+          question: "8. Which HTML tag is used to display images?",
+          answers: [
+            { text: "<img>", correct: true },
+            { text: "<image>", correct: false },
+            { text: "<pic>", correct: false },
+            { text: "<src>", correct: false },
+          ],
+        },
+        {
+          question:
+            "9. What keyword is used to declare a variable in JavaScript?",
+          answers: [
+            { text: "var", correct: true },
+            { text: "let", correct: true },
+            { text: "int", correct: false },
+            { text: "float", correct: false },
+          ],
+        },
+        {
+          question:
+            "10. Which event occurs when a user clicks an HTML element?",
+          answers: [
+            { text: "onmouseover", correct: false },
+            { text: "onchange", correct: false },
+            { text: "onclick", correct: true },
+            { text: "onload", correct: false },
+          ],
+        },
+      ];
+
+      const questionElement = document.getElementById("question");
+      const answerButtons = document.getElementById("answer-buttons");
+      const nextButton = document.getElementById("next-btn");
+      const feedback = document.getElementById("feedback");
+      const scoreDisplay = document.getElementById("score");
+      const progressBar = document.getElementById("progress");
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+
+      function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        scoreDisplay.textContent = `Score: ${score}`;
+        nextButton.classList.add("hidden");
+        showQuestion();
+      }
+
+      function showQuestion() {
+        resetState();
+        const currentQuestion = questions[currentQuestionIndex];
+        questionElement.textContent = currentQuestion.question;
+        progressBar.style.width =
+          (currentQuestionIndex / questions.length) * 100 + "%";
+
+        currentQuestion.answers.forEach((answer) => {
+          const button = document.createElement("button");
+          button.textContent = answer.text;
+          button.classList.add("btn");
+          button.addEventListener("click", () => selectAnswer(answer, button));
+          answerButtons.appendChild(button);
+        });
+      }
+
+      function resetState() {
+        feedback.textContent = "";
+        nextButton.classList.add("hidden");
+        answerButtons.innerHTML = "";
+      }
+
+      function selectAnswer(answer, button) {
+        const buttons = answerButtons.querySelectorAll(".btn");
+        buttons.forEach((btn) => (btn.disabled = true));
+
+        if (answer.correct) {
+          feedback.textContent = "✅ Correct!";
+          feedback.style.color = "green";
+          button.style.backgroundColor = "#4CAF50";
+          score++;
+        } else {
+          feedback.textContent = "❌ Wrong!";
+          feedback.style.color = "red";
+          button.style.backgroundColor = "#f44336";
+        }
+
+        scoreDisplay.textContent = `Score: ${score}`;
+        nextButton.classList.remove("hidden");
+      }
+
+      nextButton.addEventListener("click", () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          showQuestion();
+        } else {
+          showFinalScore();
+        }
+      });
+
+      function showFinalScore() {
+        questionElement.textContent = `🎉 Quiz Completed!`;
+        answerButtons.innerHTML = "";
+        feedback.textContent = "";
+        progressBar.style.width = "100%";
+        scoreDisplay.textContent = `Final Score: ${score} / ${questions.length}`;
+        nextButton.textContent = "Restart";
+        nextButton.classList.remove("hidden");
+        nextButton.onclick = startQuiz;
+      }
+
+      startQuiz();
+    </script>
+  </body>
+</html>
